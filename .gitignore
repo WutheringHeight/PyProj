@@ -1,0 +1,6 @@
+# Ignore everything inside clipmesh
+clipmesh/*
+
+# But keep the output folder
+!clipmesh/output/
+!clipmesh/output/**

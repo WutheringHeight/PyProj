@@ -1,0 +1,236 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>House Designer</title>
+    <link rel="stylesheet" href="{% static 'css/styles_design.css' %}" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <style>
+      #container3D {
+        width: 100%;
+        height: 550px;
+        background: #222;
+      }
+      .delete-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(255, 0, 0, 0.8);
+        border: none;
+        color: white;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        cursor: pointer;
+      }
+
+      .delete-btn:hover {
+        background: red;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-left">
+        <button class="menu-btn" id="menuBtn">
+          <span></span><span></span><span></span>
+        </button>
+        <h1 class="logo">House Designer</h1>
+
+        <div class="nav-dropdown">
+          <button class="nav-link dropdown-trigger">Tệp ▼</button>
+          <div class="dropdown-menu">
+            <a href="#" class="dropdown-item">Mới</a>
+            <a href="#" class="dropdown-item">Lưu</a>
+            <a href="#" class="dropdown-item">Lưu thành...</a>
+          </div>
+        </div>
+
+        <a href="#" class="nav-link">Chỉnh sửa</a>
+        <a href="{% url 'home'%}" class="nav-link">Trang chủ</a>
+      </div>
+
+      <div class="header-center">
+        <button class="tool-icon-btn" title="Hoàn tác (Ctrl+Z)">
+          <svg viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"
+            />
+          </svg>
+        </button>
+        <button class="tool-icon-btn" title="Làm lại (Ctrl+Y)">
+          <svg viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M18.4 10.6C16.55 9 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"
+            />
+          </svg>
+        </button>
+        <div class="divider-vertical"></div>
+        <button class="tool-icon-btn" title="Xóa">
+          <svg viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <div class="header-right">
+        <button class="btn-save">Lưu</button>
+        <button class="header-action-btn">Trợ giúp</button>
+        {% if user.is_authenticated %}
+        <div class="user-info">
+          <span class="user-avatar">{{ user.username|first|upper }}</span>
+          <span class="user-name">{{ user.username }}</span>
+          <a href="{% url 'logout' %}" class="btn btn-link">Đăng xuất</a>
+        </div>
+        {% else %}
+        <a href="{% url 'login' %}" class="user-avatar">A</a>
+        {% endif %}
+      </div>
+    </header>
+
+    <div class="container" id="mainContainer">
+      <button class="btn-restore-sidebar left" id="openLeftBtn">
+        <svg viewBox="0 0 24 24">
+          <path
+            fill="currentColor"
+            d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
+          />
+        </svg>
+      </button>
+      <button class="btn-restore-sidebar right" id="openRightBtn">
+        <svg viewBox="0 0 24 24">
+          <path
+            fill="currentColor"
+            d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+          />
+        </svg>
+      </button>
+
+      <main class="canvas-area">
+        <!-- 3D Viewer -->
+        <div
+          id="container3D"
+          data-mesh="{{ mesh|default:'' }}"
+          data-mtl="{{ mtl|default:'' }}"
+          data-url="{% url 'detail' %}"
+        ></div>
+        <div class="d-flex justify-content-center" id="status"></div>
+        <!-- FORM -->
+        <div
+          class="container d-flex flex-column align-items-center"
+          style="height: 300px"
+        >
+          <div class="d-flex gap-2 mt-3">
+            <input type="file" id="objInput" accept=".obj" />
+            <input type="file" id="mtlInput" accept=".mtl" />
+            <input
+              type="file"
+              id="textureInput"
+              accept=".png,.jpg,.jpeg"
+              multiple
+            />
+            <button class="btn btn-secondary" id="loadLocalModel">
+              Load model
+            </button>
+          </div>
+          <form id="promptForm" method="POST" action="{% url 'detail' %}" class="w-50 mt-4">  
+            {% csrf_token %}
+
+            <div class="mb-3 d-flex align-items-center">
+              <label for="prompt" class="form-label me-2" >Nhập prompt:</label>
+              <textarea
+                class="form-control me-2"
+                id="prompt"
+                name="prompt"
+                rows="1"
+                style="width: 300px"
+              ></textarea>
+              <button type="submit" class="btn btn-primary">Gửi</button>
+            </div>
+            <h5 class="mt-4">Kết quả:</h5>
+            <div class="border p-3 bg-light">{{ output }}</div>
+          </form>
+        </div>
+        <div class="view-mode-group">
+          <div class="bottom-control left-control" id="bottomLeftCtrl">
+            <button class="mode-btn active">2D</button>
+            <button class="mode-btn">3D</button>
+            <button class="mode-btn">ROAM</button>
+          </div>
+        </div>
+
+        <div class="bottom-control right-control" id="bottomRightCtrl">
+          <div class="zoom-group">
+            <button class="zoom-btn">-</button>
+            <span class="zoom-level">65%</span>
+            <button class="zoom-btn">+</button>
+            <button class="zoom-btn fit" title="Vừa màn hình">⛶</button>
+          </div>
+        </div>
+      </main>
+
+      <aside class="sidebar-right" id="rightSidebar">
+        <div class="sidebar-header-sm">
+          <span>Danh sách output đã tạo</span>
+          <button class="toggle-sm" id="toggleRight">✖</button>
+        </div>
+        <div class="sidebar-content compact">
+          <ul class="list-group">
+            {% for o in all_outputs %}
+            <li class="list-group-item">
+              <a href="{% url 'detail_with_folder' o.folder %}">
+                {{ o.prompt }} ({{ o.created_at|date:"d/m/Y H:i" }})
+              </a>
+              <form
+                method="post"
+                action="{% url 'delete_output' o.folder  %}"
+                onsubmit="return confirm('Bạn có chắc chắn muốn xóa output này không?');"
+              >
+                {% csrf_token %}
+                <button type="submit" class="delete-btn">🗑️</button>
+              </form>
+            </li>
+            {% empty %}
+            <li class="list-group-item">Chưa có output nào</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="prop-divider"></div>
+
+        <div class="prop-group">
+          <div class="group-title">Độ mờ</div>
+          <div class="prop-slider-row">
+            <label>Tường</label>
+            <input type="range" min="0" max="100" value="100" />
+            <span>100%</span>
+          </div>
+          <div class="prop-slider-row">
+            <label>Sàn</label>
+            <input type="range" min="0" max="100" value="100" />
+            <span>100%</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+    <!-- THREE.JS -->
+    <script type="module" src="{% static 'js/loadModel.js'%}"></script>
+    <script src="{% static 'js/script_design.js' %}"></script>
+  </body>
+</html>

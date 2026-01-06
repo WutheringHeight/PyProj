@@ -1,0 +1,166 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - House Designer</title>
+    <style>
+        .container3D {
+        width: 100%;
+        height: 180px;       
+        background: #c6c4c4ff;
+        border-radius: 8px;
+        overflow: hidden;
+        }
+        .obj-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        }
+
+        .container3D canvas {
+        pointer-events: none;
+        }
+
+    </style>
+    <link rel="stylesheet" href="{% static 'css/styles_home.css' %}">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-top">
+                <div class="logo-area">
+                    <h2>House Designer</h2>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active">
+                    <span class="icon">🏠</span> Trang chủ
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="icon">📁</span> Dự án
+                </a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <a href="#" class="nav-item">
+                    <span class="icon">⚙️</span> Cài đặt
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left">
+                    </div>
+                <div class="header-right">
+                    <span class="lang-select">Tiếng Việt ▼</span>
+                    <button class="icon-btn">🔔</button>
+                    <div class="user-profile">
+                        <div class="avatar">User</div>
+                    </div>
+                    <button class="btn-create-new">Tạo dự án mới</button>
+                </div>
+            </header>
+
+            <div class="content-scroll">
+                <section class="section">
+                    <div class="section-header">
+                        <h2>Dự án gần đây</h2>
+                        <a href="#" class="view-all">Xem tất cả →</a>
+                    </div>
+                    
+                    <div class="projects-grid">
+                        <a href={% url 'detail'%}>
+                        <div class="project-card create-card">
+                            <div class="plus-icon">+</div>
+                            <span>Dự án </span>
+                        </div>
+                        </a>
+                    </div>
+                </section>
+                <section class="section">
+                    <div class="section-header-filters">
+                        <h2>Vật thể</h2>
+                        <a href="#" class="view-all">Xem tất cả →</a>
+                    </div>
+
+                    <div class="templates-grid">
+                        {% for output in outputs %}
+                        <a href="{% url 'detail_with_folder' output.folder %}" class="obj-link">
+                        <div class="container3D"
+                            data-mesh="/media/{{ output.folder }}/meshes/mesh_0/mesh.obj"
+                            data-mtl="/media/{{ output.folder }}/meshes/mesh_0/mesh.mtl"> 
+                            <p>{{ output.folder }}</p>
+                        </div>
+                        </a>
+                        {% endfor %}
+
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- THREE.JS -->
+   <script type="module">
+import * as THREE from "https://cdn.skypack.dev/three@0.129.0/build/three.module.js";
+import { OrbitControls } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/controls/OrbitControls.js";
+import { OBJLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/OBJLoader.js";
+import { MTLLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/MTLLoader.js";
+
+document.querySelectorAll(".container3D").forEach(container => {
+    const width = container.clientWidth || 300;
+    const height = container.clientHeight || 300;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x222222);
+
+    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+    camera.position.set(0, 1, 4);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(width, height);
+    container.appendChild(renderer.domElement);
+
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight.position.set(5, 10, 7.5);
+    scene.add(dirLight);
+
+    const mesh = container.dataset.mesh;
+    const mtl = container.dataset.mtl;
+
+    const mtlLoader = new MTLLoader();
+    mtlLoader.load(mtl, materials => {
+        materials.preload();
+        const objLoader = new OBJLoader();
+        objLoader.setMaterials(materials);
+
+        objLoader.load(mesh, object => {
+            const box = new THREE.Box3().setFromObject(object);
+            const center = box.getCenter(new THREE.Vector3());
+            object.position.sub(center);
+
+            const size = box.getSize(new THREE.Vector3()).length();
+            object.scale.setScalar(2.5 / size);
+
+            scene.add(object);
+        });
+    });
+
+    function animate() {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+    }
+    animate();
+});
+</script>
+
+
+    <script src="{% static 'js/script_home.js' %}"></script>
+</body>
+</html>
