@@ -1,0 +1,5 @@
+# Bỏ qua tất cả nội dung bên trong thư mục clipmesh
+clipmesh/*
+
+# NGOẠI TRỪ thư mục output
+!clipmesh/output/

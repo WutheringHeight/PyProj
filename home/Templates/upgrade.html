@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nâng cấp tài khoản</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 0; }
+        .pricing-container { display: flex; justify-content: center; gap: 20px; padding: 50px; flex-wrap: wrap; }
+        
+        .card { 
+            background: white;
+            border: 1px solid #ccc; 
+            padding: 30px; 
+            border-radius: 15px; 
+            width: 280px; 
+            text-align: center; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .card:hover { transform: translateY(-5px); }
+        
+        /* Hiệu ứng cho gói đang sử dụng */
+        .card.active { 
+            border: 3px solid #28a745; 
+            background-color: #f0fff4; 
+            position: relative;
+        }
+        .card.active::before {
+            content: "Đang sử dụng";
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #28a745;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        h2 { text-align: center; margin-top: 50px; color: #333; }
+        h3 { font-size: 24px; color: #444; }
+        p { color: #666; font-size: 16px; margin: 20px 0; }
+
+        .btn-upgrade { 
+            background: #28a745; 
+            color: white; 
+            border: none; 
+            padding: 12px 25px; 
+            cursor: pointer; 
+            border-radius: 8px; 
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+        }
+        .btn-upgrade:hover { background: #218838; }
+        .btn-active { background: #6c757d; cursor: not-allowed; }
+
+        .back-home {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Chọn gói tài khoản của bạn</h2>
+
+    <div class="pricing-container">
+        <div class="card {% if request.user.userprofile.plan == 'FREE' %}active{% endif %}">
+            <h3>FREE</h3>
+            <p>Tối đa 3 Dự án<br>Tối đa 10 Vật thể</p>
+            <form method="POST"> {% csrf_token %}
+                <input type="hidden" name="plan" value="FREE">
+                <button type="submit" class="btn-upgrade {% if request.user.userprofile.plan == 'FREE' %}btn-active{% endif %}" 
+                        {% if request.user.userprofile.plan == 'FREE' %}disabled{% endif %}>
+                    Chọn gói này
+                </button>
+            </form>
+        </div>
+
+        <div class="card {% if request.user.userprofile.plan == 'BASIC' %}active{% endif %}">
+            <h3>BASIC</h3>
+            <p>Tối đa 10 Dự án<br>Tối đa 50 Vật thể</p>
+            <form method="POST"> {% csrf_token %}
+                <input type="hidden" name="plan" value="BASIC">
+                <button type="submit" class="btn-upgrade {% if request.user.userprofile.plan == 'BASIC' %}btn-active{% endif %}"
+                        {% if request.user.userprofile.plan == 'BASIC' %}disabled{% endif %}>
+                    Nâng cấp BASIC
+                </button>
+            </form>
+        </div>
+
+        <div class="card {% if request.user.userprofile.plan == 'UNLIMITED' %}active{% endif %}">
+            <h3>UNLIMITED</h3>
+            <p>Vô hạn Dự án<br>Vô hạn Vật thể</p>
+            <form method="POST"> {% csrf_token %}
+                <input type="hidden" name="plan" value="UNLIMITED">
+                <button type="submit" class="btn-upgrade {% if request.user.userprofile.plan == 'UNLIMITED' %}btn-active{% endif %}"
+                        {% if request.user.userprofile.plan == 'UNLIMITED' %}disabled{% endif %}>
+                    Nâng cấp UNLIMITED
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <a href="/home/" class="back-home">← Quay lại trang chủ</a>
+
+    {% if messages %}
+    <script>
+        {% for message in messages %}
+            alert("{{ message|escapejs }}");
+        {% endfor %}
+    </script>
+    {% endif %}
+
+</body>
+</html>

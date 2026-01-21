@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cài đặt - House Designer</title>
+    <link rel="stylesheet" href="{% static 'css/styles_home.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles_settings.css' %}">
+    
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-top">
+                <div class="logo-area">
+                    <a href="{% url 'home_index' %}">House Designer</a>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{% url 'home_index' %}" class="nav-item">
+                    <span class="icon">🏠</span> Trang chủ
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="icon">📁</span> Dự án
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="icon">🧊</span> Mô hình
+                </a>
+            </nav>
+            <div class="sidebar-bottom">
+                <a href="{% url 'settings' %}" class="nav-item active">
+                    <span class="icon">⚙️</span> Cài đặt
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <h2>Cài đặt hệ thống</h2>
+                <div class="header-right">
+                    <div class="user-profile">
+                        <span style="font-weight: 500;">Xin chào, {{ user.username }}</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="settings-container">
+                
+                <div class="settings-card">
+                    <h3>Giao diện & Hiển thị</h3>
+                    
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <span>Chế độ tối (Dark Mode)</span>
+                            <div class="setting-desc">Chuyển sang giao diện nền tối</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="themeToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <h3>Đơn vị đo lường</h3>
+                    
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <span>Đơn vị mặc định</span>
+                            <div class="setting-desc">Đơn vị này sẽ được dùng trong tất cả bản vẽ</div>
+                        </div>
+                        <select class="custom-select" id="unitSelect">
+                            <option value="mm">Milimet (mm)</option>
+                            <option value="cm">Centimet (cm)</option>
+                            <option value="m">Mét (m)</option>
+                            <option value="inch">Inch (in)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <a href="{% url 'home_index' %}" style="color: #1890ff; text-decoration: none;">← Quay lại trang chủ</a>
+                </div>
+
+            </div>
+        </main>
+    </div>
+    <script src="{% static 'js/theme.js' %}"></script>
+    <script src="{% static 'js/settings.js' %}"></script>
+</body>
+</html>

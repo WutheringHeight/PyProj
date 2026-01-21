@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Designer - Kiến tạo không gian sống</title>
+    <link rel="stylesheet" href="{% static 'css/styles_intro.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="container nav-content">
+        <div class="logo">House Designer <span class="dot">.</span></div>
+        <div class="nav-links">
+          <a href="/gallery">Thư viện</a>
+          <a href="{% url 'home' %}">Trang chủ</a>
+        </div>
+        <div class="nav-actions">
+          {% if user.is_authenticated %}
+          <span class="btn-text">Xin chào, {{ user.username }}</span>
+          <a href="{% url 'logout' %}" class="btn-primary">Đăng xuất</a>
+          <a href="{% url 'home_index' %}" class="btn-primary">Bắt đầu thiết kế</a>
+          {% else %}
+          <a href="{% url 'login' %}" class="btn-text">Đăng nhập</a>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-bg"></div> <div class="container hero-container">
+            <div class="hero-text">
+                <h1>Thiết kế ngôi nhà mơ ước <br>trong tầm tay bạn</h1>
+                <p>Công cụ thiết kế nội thất 3D trực tuyến số 1 Việt Nam. Không cần cài đặt, render siêu tốc, thư viện phong phú.</p>
+                <div class="hero-btns">
+                    <a href="/home" class="btn-primary btn-lg">Dùng thử miễn phí</a>
+                </div>
+                <div class="stats">
+                    <div class="stat-item"><strong>0.1K+</strong><br>Người dùng</div>
+                    <div class="stat-item"><strong>30+</strong><br>Model 3D</div>
+                    <div class="stat-item"><strong>4K</strong><br>Render</div>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2000&auto=format&fit=crop" alt="Giao diện thiết kế">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Công nghệ mạnh mẽ, thao tác đơn giản</h2>
+                <p>Chúng tôi tối ưu hóa trải nghiệm để bạn tập trung vào sáng tạo.</p>
+            </div>
+            <div class="feature-grid">
+                <a href="{% url 'design_manual' %}">
+                    <div class="feature-card">
+                        <div class="f-icon">✏️</div>
+                        <h3>Tạo thủ công</h3>
+                        <p>Chuyển đổi linh hoạt giữa bản vẽ kỹ thuật CAD và không gian 3D trực quan chỉ với 1 cú click.</p>
+                    </div>
+                </a>
+                <a href="{% url 'design_ai' %}">
+                    <div class="feature-card">
+                        <div class="f-icon">🤖</div>
+                        <h3>AI Tạo Ảnh</h3>
+                        <p>Trí tuệ nhân tạo tự động tạo hình ảnh nội thất dựa trên mô tả của bạn.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container footer-content">
+            <p>&copy; 2025 House Designer. Nền tảng thiết kế cho mọi người.</p>
+            <div class="socials">
+                <a href="#">Facebook</a>
+                <a href="#">Youtube</a>
+                <a href="#">Instagram</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,271 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Designer | 3D Workspace</title>
+    
+    <link rel="stylesheet" href="{% static 'css/styles_design.css' %}">
+    
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.129.0/build/three.module.js",
+            "three/examples/jsm/": "https://unpkg.com/three@0.129.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <style>
+        /* Đảm bảo Canvas chiếm trọn vùng hiển thị */
+        #container3D {
+            width: 100%;
+            height: 100%;
+            display: block;
+            background: #f0f0f0;
+        }
+
+        /* Style cho danh sách model trong sidebar trái */
+        .model-list-container {
+            padding: 10px;
+            color: #fff;
+        }
+        
+        .model-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #2a2a2a;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: 1px solid #333;
+        }
+
+        .model-item:hover {
+            background: #3d3d3d;
+            border-color: #555;
+        }
+
+        .model-item strong {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-left {
+            overflow-y: auto;
+            width: 260px; /* Điều chỉnh độ rộng sidebar để hiện danh sách */
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <button class="menu-btn" id="menuBtn">
+                <span></span><span></span><span></span>
+            </button>
+            <div class="logo">
+                <a href="{% url 'home_index' %}" style="text-decoration: none; color: inherit; cursor: pointer;">
+                    House Designer
+                </a>
+            </div>
+            <div class="nav-dropdown">
+                <button class="nav-link dropdown-trigger">Tệp ▼</button>
+                <div class="dropdown-menu">
+                    <a href="#" class="dropdown-item">Mới</a>
+                    <a href="#" class="dropdown-item">Lưu</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="header-center">
+            <button class="tool-icon-btn" title="Di chuyển (G)"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M13 11V5h2l-3-3-3 3h2v6H5V9l-3 3 3 3v-2h6v6H9l3 3 3-3h-2v-6h6v2l3-3-3-3v2h-6z"/></svg></button>
+            <button class="tool-icon-btn" title="Xoay (R)"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M7.11 8.53L5.7 7.11C4.8 8.27 4.24 9.61 4.07 11h2.02c.17-.85.49-1.65.98-2.36l.04-.11zm10.74-1.42l-1.41 1.41c.49.71.81 1.51.98 2.48h2.02c-.17-1.39-.73-2.73-1.63-3.89zM13 4.07V2.05c-1.39.17-2.73.73-3.89 1.63l1.41 1.41c.71-.49 1.51-.81 2.48-.99zm0 17.88v2.02c1.39-.17 2.73-.73 3.89-1.63l-1.41-1.41c-.71.49-1.51.81-2.48.99z"/></svg></button>
+        </div>
+
+        <div class="header-right">
+            <button class="btn-save">Xuất bản</button>
+            <button class="btn-save" onclick="saveCurrentProject()">Lưu dự án</button>
+            <button class="user-avatar">A</button>
+        </div>
+    </header>
+
+    <div class="container" id="mainContainer">
+        <aside class="sidebar-left" id="leftSidebar">
+            <div class="sidebar-header-sm" style="padding: 15px; color: #aaa; font-weight: bold; border-bottom: 1px solid #333;">
+                📦 THƯ VIỆN MODEL
+            </div>
+            
+            <div class="model-list-container">
+                {% for o in all_outputs %}
+                <div class="model-item" 
+                     onclick="loadModelFromSidebar('/media/{{ o.folder }}/meshes/mesh_0/mesh.obj', '/media/{{ o.folder }}/meshes/mesh_0/mesh.mtl')">
+                    <strong>{{ o.name }}</strong>
+                    <small style="color: #666;">Nhấn để đặt</small>
+                </div>
+                {% empty %}
+                <div class="model-item">Chưa có model nào</div>
+                {% endfor %}
+            </div>
+
+            <button class="sidebar-collapse-btn" id="toggleLeft">
+                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+            </button>
+        </aside>
+
+        <main class="canvas-area">
+            <div class="canvas-wrapper">
+                <div id="container3D"></div>
+            </div>
+
+            <div class="bottom-control left-control">
+                <div class="view-mode-group">
+                    <button class="mode-btn active">3D View</button>
+                    <span style="color: #666; font-size: 12px; margin-left: 10px;">G: Dịch | R: Xoay | S: Tỉ lệ</span>
+                </div>
+            </div>
+        </main>
+
+        <aside class="sidebar-right" id="rightSidebar">
+            <div class="sidebar-header-sm">
+                <span>Thuộc tính vật thể</span>
+                <button class="toggle-sm" id="toggleRight">✖</button>
+            </div>
+            <div class="sidebar-content compact">
+                <div class="prop-group">
+                    <div class="group-title">Vị trí & Kích thước</div>
+                    <div class="prop-row-input">
+                        <label>Tỉ lệ (Scale)</label>
+                        <div class="input-unit">
+                            <input type="number" id="prop-scale" value="1.0" step="0.1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+    <script>
+        window.USER_PLAN = "{{ request.user.userprofile.plan }}";
+        window.MAX_PROJECTS = parseInt("{{ user_limit_projects }}") || 3;
+        window.MAX_OBJECTS = parseInt("{{ user_limit_objects }}") || 10;
+    </script>
+    <script type="module" src="{% static 'js/three_design.js' %}"></script>
+    <script src="{% static 'js/script_design.js' %}"></script>
+    <script>
+
+    async function saveCurrentProject() {
+        // 1. Lấy Project ID từ URL (?id=7)
+        const urlParams = new URLSearchParams(window.location.search);
+        const projectId = urlParams.get('id');
+        
+        if (!projectId) {
+            alert("Không tìm thấy ID dự án!");
+            return;
+        }
+
+        // 2. Kiểm tra xem không gian 3D (world) đã sẵn sàng chưa
+        if (!window.world) {
+            console.error("Lỗi: window.world chưa được khởi tạo từ three_design.js");
+            alert("Lỗi hệ thống: Không thể truy cập dữ liệu 3D.");
+            return;
+        }
+
+        // 3. Thu thập dữ liệu từ các vật thể trong world
+        const sceneObjects = [];
+        window.world.children.forEach(obj => {
+            if (obj.userData && obj.userData.objUrl) {
+                sceneObjects.push({
+                    objUrl: obj.userData.objUrl,
+                    mtlUrl: obj.userData.mtlUrl,
+                    position: { x: obj.position.x, y: obj.position.y, z: obj.position.z },
+                    // Sử dụng các thuộc tính _x, _y, _z hoặc hàm .x, .y, .z của Euler
+                    rotation: { x: obj.rotation.x, y: obj.rotation.y, z: obj.rotation.z },
+                    scale: { x: obj.scale.x, y: obj.scale.y, z: obj.scale.z }
+                });
+            }
+        });
+
+        // 4. Gửi dữ liệu về Server bằng Fetch API
+        try {
+            const response = await fetch(`/save_project/${projectId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') // Bắt buộc để Django không chặn đứng request
+                },
+                body: JSON.stringify({
+                    scene_data: JSON.stringify(sceneObjects) // Đóng gói mảng thành chuỗi JSON
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                alert("✅ " + data.message);
+            } else if (response.status === 404) {
+                alert("❌ Lỗi 404: Đường dẫn /save_project/" + projectId + "/ chưa được cấu hình trong urls.py");
+            } else {
+                const errorText = await response.text();
+                console.error("Server Error:", errorText);
+                alert("❌ Lỗi server: " + response.status);
+            }
+        } catch (error) {
+            console.error("Fetch Error:", error);
+            alert("❌ Lỗi kết nối mạng hoặc trình duyệt.");
+        }
+    }
+
+    // Hàm bổ trợ để lấy CSRF Token từ Cookie (Django bảo mật)
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+
+    function loadSavedScene(savedData) {
+        const objects = JSON.parse(savedData);
+        objects.forEach(data => {
+            // Gọi lại hàm loadModel cũ của bạn với các thông số position/scale đã lưu
+            loadModelAtPosition(data.objUrl, data.mtlUrl, data.position.x, data.position.z, (obj) => {
+                obj.rotation.copy(data.rotation);
+                obj.scale.copy(data.scale);
+            });
+        });
+    }
+    function restoreScene() {
+        if (typeof window.loadModelAtPosition !== 'function') {
+            console.log("Đang đợi Three.js nạp hàm...");
+            setTimeout(restoreScene, 100); // Thử lại sau 100ms
+            return;
+        }
+
+        const savedDataRaw = '{{ project.scene_data|safe }}'; 
+        if (savedDataRaw && savedDataRaw !== "None" && savedDataRaw !== "[]") {
+            try {
+                const objects = JSON.parse(savedDataRaw);
+                objects.forEach(data => {
+                    window.loadModelAtPosition(data.objUrl, data.mtlUrl, data.position.x, data.position.z, (obj) => {
+                        obj.rotation.set(data.rotation.x, data.rotation.y, data.rotation.z);
+                        obj.scale.set(data.scale.x, data.scale.y, data.scale.z);
+                        if(data.position.y !== undefined) obj.position.y = data.position.y;
+                    });
+                });
+            } catch (e) {
+                console.error("Lỗi khi giải mã dữ liệu cũ:", e);
+            }
+        }
+    }
+    restoreScene();
+    </script>
+</body>
+</html>

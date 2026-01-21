@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>House Designer</title>
+
+  <link rel="stylesheet" href="{% static 'css/styles_design.css' %}" />
+    <script type="importmap">
+    {
+    "imports": {
+        "three": "https://unpkg.com/three@0.129.0/build/three.module.js",
+        "three/examples/jsm/": "https://unpkg.com/three@0.129.0/examples/jsm/"
+    }
+    }
+    </script>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .layout {
+      display: flex;
+      height: 100vh;
+    }
+
+    .canvas {
+      flex: 1;
+      background: #000;
+      position: relative;
+    }
+
+    .sidebar {
+      width: 320px;
+      background: #111;
+      color: #fff;
+      overflow-y: auto;
+      border-left: 1px solid #333;
+    }
+
+    .sidebar h3 {
+      padding: 12px;
+      margin: 0;
+      background: #1a1a1a;
+      border-bottom: 1px solid #333;
+    }
+
+    .model-item {
+      padding: 12px;
+      border-bottom: 1px solid #222;
+      cursor: pointer;
+    }
+
+    .model-item:hover {
+      background: #222;
+    }
+
+    .model-item small {
+      color: #aaa;
+    }
+  </style>
+</head>
+
+<body>
+<div class="layout">
+
+  <!-- ===== THREE CANVAS ===== -->
+  <div class="canvas" id="container3D"></div>
+
+  <!-- ===== SIDEBAR ===== -->
+  <div class="sidebar">
+    <h3>📦 Model đã tạo</h3>
+
+    {% for o in all_outputs %}
+<div class="model-item"
+     onclick="loadModelFromSidebar('/media/{{ o.folder }}/meshes/mesh_0/mesh.obj', '/media/{{ o.folder }}/meshes/mesh_0/mesh.mtl')">
+    <strong>{{ o.name }}</strong>
+</div>
+    {% empty %}
+      <div class="model-item">Chưa có model nào</div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<!-- ===== THREE JS ===== -->
+
+<script type="module" src="{% static 'js/three_design.js' %}"></script>
+</body>
+</html>

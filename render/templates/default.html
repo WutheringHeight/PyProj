@@ -1,0 +1,169 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>House Designer - Default Objects</title>
+
+    <link rel="stylesheet" href="{% static 'css/styles_intro.css' %}" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    />
+
+    <style>
+      #container3D {
+        width: 100%;
+        height: 550px;
+        background: #222;
+      }
+      .object-item {
+        cursor: pointer;
+      }
+      .object-item:hover {
+        background: #f1f1f1;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="container nav-content">
+        <div class="logo">House Designer <span class="dot">.</span></div>
+        <div class="nav-links">
+          <a href="/gallery">Thư viện</a>
+          <a href="{% url 'home' %}">Trang chủ</a>
+        </div>
+        <div class="nav-actions">
+          {% if user.is_authenticated %}
+          <span class="btn-text">Xin chào, {{ user.username }}</span>
+          <a href="{% url 'logout' %}" class="btn-primary">Đăng xuất</a>
+          {% else %}
+          <a href="{% url 'login' %}" class="btn-text">Đăng nhập</a>
+          <a href="{% url 'home' %}" class="btn-primary">Bắt đầu thiết kế</a>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+
+    <div class="container py-5">
+      <h2 class="mb-4 text-center">📦 Object có sẵn</h2>
+
+      <div class="row g-4">
+        <!-- LEFT: 3D Viewer + Save Form -->
+        <div class="col-md-8">
+          <div class="card shadow-sm mb-4">
+            <div class="card-header fw-bold">🎮 Xem trước 3D</div>
+            <div class="card-body p-0">
+              <div
+                id="container3D"
+                data-folder="{{ output|default:'' }}"
+                data-mesh="{{ mesh|default:'' }}"
+                data-mtl="{{ mtl|default:'' }}"
+              ></div>
+            </div>
+          </div>
+
+          <div class="card p-4 shadow-sm">
+            <h5 class="mb-3">💾 Lưu object này</h5>
+            <form id="saveForm" method="post">
+              {% csrf_token %}
+              <input type="hidden" name="source_folder" value="{{ output }}" />
+              <div class="mb-3">
+                <label class="form-label">Tên output</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="name"
+                  placeholder="Ví dụ: Ghế sofa phòng khách"
+                  required
+                />
+              </div>
+              <button type="submit" class="btn btn-primary">
+                Lưu vào output
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- RIGHT: Default Objects + User Outputs -->
+        <div class="col-md-4">
+          <!-- Default objects -->
+          <div class="card shadow-sm mb-4">
+            <div class="card-header fw-bold">🏷 Object mặc định</div>
+            <ul class="list-group list-group-flush">
+              {% for obj in default_objects %}
+              <li class="list-group-item">
+                <a href="{% url 'design_default_folder' obj.folder %}">
+                  {{ obj.name }}
+                </a>
+                <!-- Download button -->
+                <a
+                  href="{% url 'download_output' obj.folder %}"
+                  class="btn btn-sm btn-success"
+                  title="Tải về"
+                >
+                  ⬇
+                </a>
+              </li>
+              {% empty %}
+              <li class="list-group-item text-muted">
+                Chưa có object mặc định
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <!-- User outputs -->
+          <div class="card shadow-sm h-100">
+            <div class="card-header fw-bold">📂 Output đã tạo</div>
+            <ul class="list-group list-group-flush">
+              {% for o in all_outputs %}
+              <li
+                class="list-group-item d-flex justify-content-between align-items-center"
+              >
+                <a href="{% url 'design_default_folder' o.folder %}">
+                  {{ o.name }}<br />
+                  <small class="text-muted"
+                    >{{ o.created_at|date:"d/m/Y H:i" }}</small
+                  >
+                </a>
+                <!-- Download button -->
+                <a
+                  href="{% url 'download_output' o.folder %}"
+                  class="btn btn-sm btn-success"
+                  title="Tải về"
+                >
+                  ⬇
+                </a>
+                <form
+                  method="post"
+                  action="{% url 'delete_output' o.folder %}"
+                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa output này không?');"
+                >
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-danger">
+                    🗑️
+                  </button>
+                </form>
+              </li>
+              {% empty %}
+              <li class="list-group-item text-muted">Chưa có output nào</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.129.0/build/three.module.js"
+        }
+      }
+    </script>
+    <script type="module" src="{% static 'js/loadModelDe.js' %}"></script>
+  </body>
+</html>
