@@ -20,7 +20,18 @@
         <div class="nav-actions">
           {% if user.is_authenticated %}
           <span class="btn-text">Xin chào, {{ user.username }}</span>
-          <a href="{% url 'logout' %}" class="btn-primary">Đăng xuất</a>
+          <a href="#" onclick="confirmLogoutIntro(event)" class="btn-primary">Đăng xuất</a>
+            <form id="logout-form-intro" action="{% url 'logout' %}" method="POST" style="display: none;">
+                {% csrf_token %}
+            </form>
+            <script>
+                function confirmLogoutIntro(event) {
+                    event.preventDefault();
+                    if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
+                        document.getElementById('logout-form-intro').submit();
+                    }
+                }
+            </script>
           <a href="{% url 'home_index' %}" class="btn-primary">Bắt đầu thiết kế</a>
           {% else %}
           <a href="{% url 'login' %}" class="btn-text">Đăng nhập</a>

@@ -11,14 +11,30 @@ from django.views.decorators.csrf import csrf_exempt
 from gallery.models  import MeshObject
 from home.models import Project
 from home.models import UserProfile
+import datetime
 
 # Create your views here.
 @login_required
 def index(request,folder=None):
     profile, created = UserProfile.objects.get_or_create(user=request.user)
+
     project_id = request.GET.get('id')
-    project = get_object_or_404(Project, id=project_id, user=request.user)
-    
+    template_name = request.GET.get('template')
+
+    if project_id:
+        project = get_object_or_404(Project, id=project_id, user=request.user)
+    else:
+        # Nếu KHÔNG có ID (Link Template),tạo dự án mới
+        if template_name:
+            new_name = f"Thiết kế {template_name} - {datetime.datetime.now().strftime('%d/%m %H:%M')}"
+        else:
+            new_name = f"Dự án mới - {datetime.datetime.now().strftime('%d/%m %H:%M')}"
+        # Tạo project trong Database
+        project = Project.objects.create(
+            user=request.user,
+            name=new_name
+        )
+    # project = get_object_or_404(Project, id=project_id, user=request.user)
     # Lấy thông tin gói từ UserProfile
     profile = request.user.userprofile 
     limits = {

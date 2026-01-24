@@ -92,15 +92,31 @@
             </div>
 
             <a
-              href="{% url 'logout' %}"
+              href="#"
+              onclick="confirmLogout(event)"
               style="
                 margin-left: 10px;
                 color: #ff4d4f;
                 text-decoration: none;
                 font-size: 14px;
+                cursor: pointer;
               "
-              >Đăng xuất</a
             >
+              Đăng xuất
+            </a>
+
+            <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display: none;">
+                {% csrf_token %}
+            </form>
+
+            <script>
+                function confirmLogout(event) {
+                    event.preventDefault();
+                    if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
+                        document.getElementById('logout-form').submit();
+                    }
+                }
+            </script>
 
             <a
               href="{% url 'create_project' %}"
@@ -186,44 +202,30 @@
           <section class="section">
             <div class="section-header-filters">
               <h2>Chọn mẫu thiết kế</h2>
-              <div class="filters">
-                <button class="filter-tag active">Tất cả</button>
-                <button class="filter-tag">Phòng khách</button>
-                <button class="filter-tag">Phòng ngủ</button>
-              </div>
             </div>
 
             <div class="templates-grid">
-              <div class="template-card">
-                <div
-                  class="temp-img"
-                  style="background: #ddd; height: 120px; border-radius: 8px"
-                ></div>
+              <a href="{% url 'app_design_index' %}?template=bedroom" class="template-card" style="text-decoration: none; color: inherit; display: block;">
+                <div class="temp-img" style="background: #ddd; height: 120px; border-radius: 8px">
+                  </div>
                 <div class="temp-info">
                   <h4>Bedroom</h4>
-                  <span>Green Wood Tranquility</span>
                 </div>
-              </div>
-              <div class="template-card">
-                <div
-                  class="temp-img"
-                  style="background: #ddd; height: 120px; border-radius: 8px"
-                ></div>
+              </a>
+
+              <a href="{% url 'app_design_index' %}?template=kitchen" class="template-card" style="text-decoration: none; color: inherit; display: block;">
+                <div class="temp-img" style="background: #ddd; height: 120px; border-radius: 8px"></div>
                 <div class="temp-info">
                   <h4>Kitchen</h4>
-                  <span>Modern Grey</span>
                 </div>
-              </div>
-              <div class="template-card">
-                <div
-                  class="temp-img"
-                  style="background: #ddd; height: 120px; border-radius: 8px"
-                ></div>
+              </a>
+
+              <a href="{% url 'app_design_index' %}?template=livingroom" class="template-card" style="text-decoration: none; color: inherit; display: block;">
+                <div class="temp-img" style="background: #ddd; height: 120px; border-radius: 8px"></div>
                 <div class="temp-info">
                   <h4>Living Room</h4>
-                  <span>Cozy Sunset</span>
                 </div>
-              </div>
+              </a>
             </div>
           </section>
 

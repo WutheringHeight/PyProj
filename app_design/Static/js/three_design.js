@@ -194,4 +194,77 @@ function animate() {
     orbitControls.update();
     renderer.render(scene, camera);
 }
+/* =====================================================
+   8. AUTO LOAD TEMPLATE (LOGIC MỚI)
+===================================================== */
+
+function initTemplateLoader() {
+    const params = new URLSearchParams(window.location.search);
+    const templateName = params.get('template'); 
+
+    if (!templateName) return; 
+
+    console.log("Đang khởi tạo mẫu:", templateName);
+
+    const templates = {
+        'bedroom': { 
+            mtl: '/static/models/bedroom/obj.mtl', 
+            obj: '/static/models/bedroom/tinker.obj' 
+        },
+        'kitchen': { 
+            mtl: '/static/models/kitchen/obj.mtl', 
+            obj: '/static/models/kitchen/tinker.obj' 
+        },
+        'livingroom': { 
+            mtl: '/static/models/livingroom/obj.mtl', 
+            obj: '/static/models/livingroom/tinker.obj' 
+        }
+    };
+
+    const config = templates[templateName];
+
+    if (config) {
+        loadTemplateModel(config.obj, config.mtl);
+    } else {
+        console.warn("Không tìm thấy cấu hình cho mẫu này:", templateName);
+    }
+}
+
+function loadTemplateModel(objUrl, mtlUrl) {
+    const mtlLoader = new MTLLoader();
+    
+    mtlLoader.load(mtlUrl, (materials) => {
+        materials.preload();
+
+        const objLoader = new OBJLoader();
+        objLoader.setMaterials(materials);
+
+        objLoader.load(objUrl, (object) => {
+         
+            const box = new THREE.Box3().setFromObject(object);
+            const center = box.getCenter(new THREE.Vector3());
+            object.position.sub(center); 
+ 
+            object.scale.set(0.1, 0.1, 0.1); 
+
+            object.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                }
+            });
+
+            scene.add(object);
+
+            console.log("Đã tải xong Template!");
+
+        }, undefined, (error) => {
+            console.error("Lỗi tải OBJ:", error);
+        });
+
+    }, undefined, (error) => {
+        console.error("Lỗi tải MTL:", error);
+    });
+}
+initTemplateLoader();
 animate();
